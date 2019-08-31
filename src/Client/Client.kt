@@ -50,8 +50,6 @@ object Client {
         println("File transfer complete")
     }
 
-    //METODOS
-
     private fun lerArquivo(diretorio:String):String{
 
         var linha: String //conteudo do arquivo

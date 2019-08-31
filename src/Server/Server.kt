@@ -48,14 +48,9 @@ object Server {
             bos.flush()
             bos.close()
             println("File received\n")
-            //println(pduBits)
-            //println(pduBits.length)
 
             //Escrita do payload (bits)
             gravarArquivo(diretorioPayloadBits,separaBitsPayload(pduBits.toString()))
-
-            //println(separaBitsPayload(pduBits.toString()))
-            //println(bitsToString(separaBitsPayload(pduBits.toString())))
 
             //escrita do payload
             gravarArquivo(diretorioPayloadRecebido,bitsToString(separaBitsPayload(pduBits.toString())))
@@ -64,8 +59,6 @@ object Server {
         }
 
     }
-
-    //METODOS
 
     private fun gravarArquivo(diretorio:String, mensagem:String){
         //Escrita do payload (bits)
@@ -105,20 +98,6 @@ object Server {
 
         return string.toString()
     }
-
-    /*
-    private fun BitToString(str: String): String {
-        var payload = str
-        val string = StringBuilder()
-        payload = separaBitsPayload(str)
-        var i = 0
-        while (i < payload.length) {
-            val c = Integer.parseInt(payload.substring(i, i + 8), 2).toChar()
-            string.append(c)
-            i = i + 8
-        }
-        return string.toString()
-    }*/
 
     private fun toBinary(s: String): String { //ascii
         val temp = s
