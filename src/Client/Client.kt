@@ -21,8 +21,10 @@ object Client {
         val ipDest = "192.168.0.11"
         val macDest = getMacWithArp(ipDest)   //endereco mac de destino
         val macOri= ipOriMac()
-        val diretorioBitsEnviados = "2_bitsEnviados_Client.txt" //arquivo a ser criado
         val diretorioPayload ="1_payload.txt" //payload recebido por outra camada
+        val diretorioPduOriginal = "2_pduOriginal_Client.txt"
+        val diretorioBitsEnviados = "3_pduBitsEnviados_Client.txt"
+
         val socket = Socket(ipDest, 15123)
 
         //Leitura payload
@@ -32,8 +34,15 @@ object Client {
         //bits prontos para envio
         val pduBits = bitsFile(macToBinary(macDest), macToBinary(macOri), DecToBinary(Integer.toString(size)), toBinary(payload))
         //println(pduBits.length)
+
+        //Escrita do arquivo com a pdu original
+        gravarArquivo(diretorioPduOriginal,macDest.replace("-",":")+
+                macOri.replace("-",":")+Integer.toString(size)+payload)
+
         //Escrita do arquivo com pdu de bits
         gravarArquivo(diretorioBitsEnviados,pduBits)
+
+
 
         val transferFile = File(diretorioBitsEnviados) // arquivo a ser transferido
         val bytearray =
@@ -108,14 +117,13 @@ object Client {
             var line: String? = null
             line =  inn.readLine()
             while (line != null) {
-
                 //Linux
                 val posi =line!!.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
                 //Windows
                 if (i == 3) { //mac sempre na terceira linha
-                    val ende = line!!.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                    return ende[2]
+                    //val ende = line!!.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                    return posi[2]
                 }
                 i++
                 line =  inn.readLine()
@@ -128,7 +136,7 @@ object Client {
         } catch (ex: IOException) {
             ex.printStackTrace()
         }
-        return ""
+        return "41-7f-33-0e-65-b2" //evita adaptações para testes em uma máquina
     }
 
     private fun DecToBinary(decimal: String): String {
@@ -174,8 +182,7 @@ object Client {
         return string.toString()
     }
 
-    private fun obterIpCorreto(): String? { //corrige o erro de multiplas interfaces
-
+    private fun obterIpCorreto(): String? { //resolve o problema de multiplas interfaces
         var ipAddress: String? = null
         var net: Enumeration<NetworkInterface>? = null
         try {
@@ -203,7 +210,7 @@ object Client {
         var ip: InetAddress
         try {
             //ip = InetAddress.getLocalHost()
-            ip = InetAddress.getByName(obterIpCorreto());
+            ip = InetAddress.getByName(obterIpCorreto()); //resolve problema de multiplas interfaces
 
             val network = NetworkInterface.getByInetAddress(ip)
             val mac = network.hardwareAddress

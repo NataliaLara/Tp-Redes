@@ -9,12 +9,10 @@ object Server {
     @JvmStatic
     fun main(args: Array<String>) {
 
-        val diretorioRecebido = "3_bitsRecebidos_Server.txt" //arquivo a ser criado
-        val diretorioPayloadBits ="4_bitsPayload_Server.txt" //arquivo a ser criado
-        val diretorioPayloadRecebido = "5_payloadRecebido_Server.txt" //arquivo a ser criado
+        val diretorioRecebido = "4_bitsRecebidos_Server.txt" //arquivo a ser criado
+        val diretorioPayloadBits ="5_bitsPayload_Server.txt" //arquivo a ser criado
+        val diretorioPayloadRecebido = "6_payloadRecebido_Server.txt" //arquivo a ser criado
         val filesize = 1022386
-        var bytesRead: Int
-        var currentTot: Int
 
         val serverSocket = ServerSocket(15123)
 
