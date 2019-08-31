@@ -23,41 +23,49 @@ object Server {
 
             println("Accepted connection : $socket")
 
-            val bytearray = ByteArray(filesize) // vetor de bits que receberá o arquivo de bits que o cliente tranferiu
-            val `is` = socket.getInputStream() // canal para coletar os dados que viram do cliente para o servidor
-            val fos = FileOutputStream(diretorioRecebido) // Objeto que aponta para o arquivo que será preenchido
-            // com dados copiados do arquivo do cliente
-
-            val bos =
-                BufferedOutputStream(fos) // BufferedOutputStream ajuda a gravar dados no arquivo de entrada/saída através de uma matriz de bytes.
-            bytesRead = `is`.read(bytearray, 0, bytearray.size)
-            currentTot = bytesRead // numero de bits lidos
-
-            do {
-                bytesRead = `is`.read(bytearray, currentTot, bytearray.size - currentTot)
-
-                if (bytesRead >= 0) currentTot += bytesRead
-            } while (bytesRead > -1) //le apartir do fluxo de entrada e vai atualizando o numero de bits lidos ate nao ter mais dados restantes no fluxo de entrada, ou seja
-            // bytesRead ser -1
-            val pduBits = StringBuilder()
-            for (i in 0 until currentTot) {
-                if(!bytearray[i].toString().equals("10")) //nao conta o espaco em branco
-                    pduBits.append(bytearray[i].toChar())
-            }
-            bos.write(bytearray, 0, currentTot) //escrevemos os bytes no arquivo
-            bos.flush()
-            bos.close()
+            //recebe arquivo do cliente
+            val pduBits :String = recebeArquivo(filesize,socket,diretorioRecebido)
             println("File received\n")
 
             //Escrita do payload (bits)
-            gravarArquivo(diretorioPayloadBits,separaBitsPayload(pduBits.toString()))
+            gravarArquivo(diretorioPayloadBits,separaBitsPayload(pduBits))
 
             //escrita do payload
-            gravarArquivo(diretorioPayloadRecebido,bitsToString(separaBitsPayload(pduBits.toString())))
+            gravarArquivo(diretorioPayloadRecebido,bitsToString(separaBitsPayload(pduBits)))
 
             socket.close()
         }
 
+    }
+
+    private fun recebeArquivo(filesize:Int, socket:Socket, diretorio:String): String{
+        var currentTot: Int
+        var bytesRead: Int
+        val bytearray = ByteArray(filesize) // vetor de bits que receberá o arquivo de bits que o cliente tranferiu
+        val `is` = socket.getInputStream() // canal para coletar os dados que viram do cliente para o servidor
+        val fos = FileOutputStream(diretorio) // Objeto que aponta para o arquivo que será preenchido
+        // com dados copiados do arquivo do cliente
+
+        val bos =
+            BufferedOutputStream(fos) // BufferedOutputStream ajuda a gravar dados no arquivo de entrada/saída através de uma matriz de bytes.
+        bytesRead = `is`.read(bytearray, 0, bytearray.size)
+        currentTot = bytesRead // numero de bits lidos
+
+        do {
+            bytesRead = `is`.read(bytearray, currentTot, bytearray.size - currentTot)
+
+            if (bytesRead >= 0) currentTot += bytesRead
+        } while (bytesRead > -1) //le apartir do fluxo de entrada e vai atualizando o numero de bits lidos ate nao ter mais dados restantes no fluxo de entrada, ou seja
+        // bytesRead ser -1
+        val arquivo = StringBuilder()
+        for (i in 0 until currentTot) {
+            if(!bytearray[i].toString().equals("10")) //nao conta o espaco em branco
+                arquivo.append(bytearray[i].toChar())
+        }
+        bos.write(bytearray, 0, currentTot) //escrevemos os bytes no arquivo
+        bos.flush()
+        bos.close()
+        return arquivo.toString()
     }
 
     private fun gravarArquivo(diretorio:String, mensagem:String){
@@ -81,12 +89,12 @@ object Server {
 
     private fun separaBitsPayload(pdu: String): String{
         val s: String
-        s = pdu.substring(64, pdu.length)  //mesma maquina
-        //s = pdu.substring(112, pdu.length) //dois computadores
+        //s = pdu.substring(64, pdu.length)  //mesma maquina
+        s = pdu.substring(112, pdu.length) //dois computadores
         return s
     }
 
-    private fun bitsToString(str: String): String {
+    private fun bitsToString(str: String): String { //ascii
         var payload = str
         val string = StringBuilder()
         var i = 0
@@ -97,22 +105,6 @@ object Server {
         }
 
         return string.toString()
-    }
-
-    private fun toBinary(s: String): String { //ascii
-        val temp = s
-        val bytes = s.toByteArray()
-
-        val binary = StringBuilder()
-        for (b in bytes) {
-            var `val` = b.toInt()
-            for (i in 0..7)
-            {
-                binary.append(if (`val` and 128 == 0) 0 else 1)
-                `val` = `val` shl 1
-            }
-        }
-        return binary.toString()
     }
 
 }

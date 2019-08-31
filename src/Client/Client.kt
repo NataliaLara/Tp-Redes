@@ -17,7 +17,8 @@ object Client {
     @Throws(IOException::class)
     @JvmStatic
     fun main(args: Array<String>) {
-        val ipDest ="192.168.0.13"		//IP do servidor - recebido por outra camada
+        //val ipDest ="192.168.0.13"		//IP do servidor - recebido por outra camada
+        val ipDest = "192.168.0.11"
         val macDest = getMacWithArp(ipDest)   //endereco mac de destino
         val macOri= ipOriMac()
         val diretorioBitsEnviados = "2_bitsEnviados_Client.txt" //arquivo a ser criado
@@ -107,12 +108,21 @@ object Client {
             var line: String? = null
             line =  inn.readLine()
             while (line != null) {
+
+                //Linux
+                val posi =line!!.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+
+                //Windows
                 if (i == 3) { //mac sempre na terceira linha
                     val ende = line!!.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                     return ende[2]
                 }
                 i++
                 line =  inn.readLine()
+
+                //Linux
+                if(i<3 && line==null)
+                    return(posi[3].replace(":","-"))
             }
 
         } catch (ex: IOException) {
