@@ -20,55 +20,19 @@ object Client {
         val ipDest ="192.168.0.13"		//IP do servidor - recebido por outra camada
         val macDest = getMacWithArp(ipDest)   //endereco mac de destino
         val macOri= ipOriMac()
-        val diretorioBitsEnviados = "bitsEnviados_Client.txt" //arquivo a ser criado
-        val diretorioPayload ="payload.txt" //payload recebido por outra camada
+        val diretorioBitsEnviados = "2_bitsEnviados_Client.txt" //arquivo a ser criado
+        val diretorioPayload ="1_payload.txt" //payload recebido por outra camada
         val socket = Socket(ipDest, 15123)
 
         //Leitura payload
-        var linha: String //conteudo do arquivo
-        var payload= " "
-        try {
-            // Le o arquivo
-            val ler = FileReader(diretorioPayload)
-            val reader = BufferedReader(ler)
-
-            linha = reader.readLine()
-            while (linha != null) {
-                payload = linha
-                //println(payload)
-                linha = reader.readLine()
-            }
-
-        } catch (e: java.lang.IllegalStateException) {
-
-        }catch (e: IOException) {
-            e.printStackTrace()
-        }
+        val payload =lerArquivo(diretorioPayload)
         val size = payload.length
 
         //bits prontos para envio
-        val bits = bitsFile(macToBinary(macDest), macToBinary(macOri), DecToBinary(Integer.toString(size)), toBinary(payload))
-
-        //Escrita do arquivo com bits
-        try {
-            val fileBits =  File(diretorioBitsEnviados);
-
-            // Se o arquivo nao existir, ele gera
-            if (!fileBits.exists()) {
-                fileBits.createNewFile()
-            }
-
-            // Prepara para escrever no arquivo
-            val fw = FileWriter(fileBits.absoluteFile)
-            val bw = BufferedWriter(fw)
-
-            // Escreve e fecha arquivo
-            bw.write(bits)
-            bw.close()
-
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
+        val pduBits = bitsFile(macToBinary(macDest), macToBinary(macOri), DecToBinary(Integer.toString(size)), toBinary(payload))
+        //println(pduBits.length)
+        //Escrita do arquivo com pdu de bits
+        gravarArquivo(diretorioBitsEnviados,pduBits)
 
         val transferFile = File(diretorioBitsEnviados) // arquivo a ser transferido
         val bytearray =
@@ -77,6 +41,7 @@ object Client {
         val bin = BufferedInputStream(fin)
         bin.read(bytearray, 0, bytearray.size) // Processo de transformar o arquivo em binario
         val os = socket.getOutputStream()
+
         colisao()
         println("Sending Files...")
         os.write(bytearray, 0, bytearray.size)
@@ -86,6 +51,50 @@ object Client {
     }
 
     //METODOS
+
+    private fun lerArquivo(diretorio:String):String{
+
+        var linha: String //conteudo do arquivo
+        var arquivo= " "
+        try {
+            // Le o arquivo
+            val ler = FileReader(diretorio)
+            val reader = BufferedReader(ler)
+
+            linha = reader.readLine()
+            while (linha != null) {
+                arquivo= linha
+                //println(payload)
+                linha = reader.readLine()
+            }
+
+        } catch (e: java.lang.IllegalStateException) {
+
+        }catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return arquivo
+
+    }
+
+    private fun gravarArquivo(diretorio:String, mensagem:String){
+        //Escrita do payload (bits)
+        try {
+            val filePayload =  File(diretorio);
+
+            if (!filePayload.exists()) {
+                filePayload.createNewFile()
+            }
+            val fw = FileWriter(filePayload.absoluteFile)
+            val bw = BufferedWriter(fw)
+
+            bw.write(mensagem)
+            bw.close()
+
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
 
     fun getMacWithArp(ipAddress: String): String {
         var i = 0
