@@ -24,44 +24,40 @@ object Client {
         val diretorioPayload ="1_payload.txt" //payload recebido por outra camada
         val diretorioPduOriginal = "2_pduOriginal_Client.txt"
         val diretorioBitsEnviados = "3_pduBitsEnviados_Client.txt"
-        val diretorioCamadaSuperior = "0_pduCamadaSuperior_Client.txt"
         val filesize = 1022386
-
-        //cliente sempre online
-        //verificar se payload está vazio
-
-        val aplicationSocket = ServerSocket(44444)
-
+        var diretotioRequest = "/home/natalia/IdeaProjects/Tp-Redes/Cliente/request.txt"
+        val diretorioResponse="/home/natalia/IdeaProjects/Tp-Redes/Cliente/response.txt"
+        val port=15123
 
         while(true) {
+            var j = 0
+            var pduSuperior:String = ""
+            var infos = pduSuperior.split(" ")
 
-            val socketAplication = aplicationSocket.accept()
-
-            //recebe arquivo de outra camada
-            val pduSuperior :String = recebeArquivo(filesize,socketAplication,diretorioCamadaSuperior)
-            //println(pduSuperior)
-
-            val infos = pduSuperior.split(" ")
-
-            for (i in infos.indices) {
-                //println(infos[i])
+            while(j<2 ) {
+                pduSuperior = lerArquivo(diretotioRequest)
+                infos = pduSuperior.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray().toList()
+                j=infos.size;
             }
+            var request = StringBuilder()
+            for (i in infos.indices) {
+                if(i!=0){
+                    request.append(infos[i])
+                    if(i!=infos.size-1)
+                        request.append(" ")
+                }
+                //println(" "+i+""+infos[i])
+            }
+
             val ipDest=infos[0];
             val macDest = getMacWithArp(ipDest)   //endereco mac de destino
 
-            val socket = Socket(ipDest, 15123)
-            //val socket = Socket(ipDest, 8081)
-
             //Leitura payload
-            val payload = infos[1] +" " + infos[2]
+            val payload = request.toString()
             val size = payload.length
 
             //bits prontos para envio
-            val pduBits = bitsFile(
-                macToBinary(macDest),
-                macToBinary(macOri),
-                DecToBinary(Integer.toString(size)),
-                toBinary(payload)
+            val pduBits = bitsFile(macToBinary(macDest),macToBinary(macOri),DecToBinary(Integer.toString(size)),toBinary(payload)
             )
             //println(pduBits.length)
 
@@ -74,6 +70,7 @@ object Client {
             //Escrita do arquivo com pdu de bits
             gravarArquivo(diretorioBitsEnviados, pduBits)
 
+            val socket = Socket(ipDest, port)
             val transferFile = File(diretorioBitsEnviados) // arquivo a ser transferido
             val bytearray =
                 ByteArray(transferFile.length().toInt()) // vetor onde o arquivo será colocado para ser transferido
@@ -88,6 +85,16 @@ object Client {
             os.flush()
             socket.close()
             println("File transfer complete")
+
+            val serverSocket = ServerSocket(55555)
+            val socketResponse = serverSocket.accept()
+           // val socket2 = Socket(ipDest, 55555)
+            var response=recebeArquivo(filesize,socketResponse,diretorioResponse)
+            println("Response Receive\n")
+            socketResponse.close()
+
+            val limparArquivo = File(diretotioRequest)
+            limparArquivo.writeText("");
         }
 
 
@@ -298,7 +305,6 @@ object Client {
         val bytearray = ByteArray(filesize) // vetor de bits que receberá o arquivo de bits que o cliente tranferiu
         val `is` = socket.getInputStream() // canal para coletar os dados que viram do cliente para o servidor
         val fos = FileOutputStream(diretorio) // Objeto que aponta para o arquivo que será preenchido
-        // com dados copiados do arquivo do cliente
 
         val bos =
             BufferedOutputStream(fos) // BufferedOutputStream ajuda a gravar dados no arquivo de entrada/saída através de uma matriz de bytes.

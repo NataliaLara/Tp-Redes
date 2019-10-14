@@ -14,19 +14,22 @@ Server {
         val diretorioPayloadBits ="5_bitsPayload_Server.txt" //arquivo a ser criado
         val diretorioPayloadRecebido = "6_payloadRecebido_Server.txt" //arquivo a ser criado
         val filesize = 1022386
+        val diretorioRequest ="/home/natalia/IdeaProjects/Tp-Redes/Servidor/request.txt"
+        var diretorioResponse ="/home/natalia/IdeaProjects/Tp-Redes/Servidor/response.txt"
+        val port=15123
 
-        val serverSocket = ServerSocket(15123)
-        //val serverSocket = ServerSocket(6020)
+        val serverSocket = ServerSocket(port)
 
         while(true){
-            val socket = serverSocket.accept()
+            var socket = serverSocket.accept()
 
             println("Accepted connection : $socket")
 
+            var ipOrigem = socket.inetAddress.hostAddress
             //recebe arquivo do cliente
             val pduBits :String = recebeArquivo(filesize,socket,diretorioRecebido)
             //println(pduBits.length)
-            println("File received\n")
+            println("File received")
 
             //Escrita do payload (bits)
             gravarArquivo(diretorioPayloadBits,separaBitsPayload(pduBits))
@@ -34,20 +37,43 @@ Server {
             //escrita do payload
             gravarArquivo(diretorioPayloadRecebido,bitsToString(separaBitsPayload(pduBits)))
 
-            /*
-            //envio
-            val ipDest =172.16.254.114
-            val socketEnvio = Socket(ipDest, 55555)
+            //escrita request
+            gravarArquivo(diretorioRequest,bitsToString(separaBitsPayload(pduBits)))
 
-            val transferFile = File(diretorioPayloadBits) // arquivo a ser transferido
+
+
+            var j = 0
+            var response:String = " "
+            var infos = response.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray().toList()
+
+            while (j<1) {
+                response=lerArquivo(diretorioResponse)
+                var infos = response.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray().toList()
+                j=infos.size
+            }
+            println("Response Receive")
+           socket.close()
+
+
+            val socketResponse = Socket(ipOrigem, 55555)
+            //val socket2 = serverSocket.accept()
+
+            val transferFile = File(diretorioResponse) // arquivo a ser transferido
             val bytearray =
                 ByteArray(transferFile.length().toInt()) // vetor onde o arquivo será colocado para ser transferido
             val fin = FileInputStream(transferFile)
             val bin = BufferedInputStream(fin)
             bin.read(bytearray, 0, bytearray.size) // Processo de transformar o arquivo em byte
-            val os = socket.getOutputStream()
-             */
-            socket.close()
+            val os = socketResponse.getOutputStream()
+
+            os.write(bytearray, 0, bytearray.size)
+            os.flush()
+            socketResponse.close()
+            println("Sending Response...\n")
+
+            val limparArquivo = File(diretorioResponse)
+            limparArquivo.writeText("");
+
         }
 
     }
@@ -106,6 +132,52 @@ Server {
         //s = pdu.substring(64, pdu.length)  //mesma maquina
         s = pdu.substring(112, pdu.length) //dois computadores
         return s
+    }
+
+    private fun separaBitsMacOri(pdu:String) : String{ //origem da outra maquina, destino dessa
+        val s: String
+        s = pdu.substring(48, 96) //dois computadores
+        return s
+    }
+
+    private fun bitsToMac(str: String) :String{
+        var mac = str
+        val string = StringBuilder()
+        var i = 0
+        while (i < mac.length && (i+8)<=mac.length) {
+            val c = java.lang.Integer.toHexString(Integer.parseInt(mac.substring(i, i + 8),2))
+            //Byte.parseByte(,2)
+            //println(c)
+            string.append(c+":")
+            i = i + 8
+        }
+        string.deleteCharAt(string.length-1)
+        return string.toString()
+    }
+
+    private fun lerArquivo(diretorio:String):String{
+
+        var linha: String //conteudo do arquivo
+        var arquivo= " "
+        try {
+            // Le o arquivo
+            val ler = FileReader(diretorio)
+            val reader = BufferedReader(ler)
+
+            linha = reader.readLine()
+            while (linha != null) {
+                arquivo= linha
+                //println(linha)
+                linha = reader.readLine()
+            }
+
+        } catch (e: java.lang.IllegalStateException) {
+
+        }catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return arquivo
+
     }
 
     private fun bitsToString(str: String): String { //ascii
