@@ -3,7 +3,8 @@ package Server
 import java.net.*
 import java.io.*
 
-object Server {
+object
+Server {
 
     @Throws(IOException::class)
     @JvmStatic
@@ -15,6 +16,7 @@ object Server {
         val filesize = 1022386
 
         val serverSocket = ServerSocket(15123)
+        //val serverSocket = ServerSocket(6020)
 
         while(true){
             val socket = serverSocket.accept()
@@ -23,6 +25,7 @@ object Server {
 
             //recebe arquivo do cliente
             val pduBits :String = recebeArquivo(filesize,socket,diretorioRecebido)
+            //println(pduBits.length)
             println("File received\n")
 
             //Escrita do payload (bits)
@@ -31,6 +34,19 @@ object Server {
             //escrita do payload
             gravarArquivo(diretorioPayloadRecebido,bitsToString(separaBitsPayload(pduBits)))
 
+            /*
+            //envio
+            val ipDest =172.16.254.114
+            val socketEnvio = Socket(ipDest, 55555)
+
+            val transferFile = File(diretorioPayloadBits) // arquivo a ser transferido
+            val bytearray =
+                ByteArray(transferFile.length().toInt()) // vetor onde o arquivo será colocado para ser transferido
+            val fin = FileInputStream(transferFile)
+            val bin = BufferedInputStream(fin)
+            bin.read(bytearray, 0, bytearray.size) // Processo de transformar o arquivo em byte
+            val os = socket.getOutputStream()
+             */
             socket.close()
         }
 
@@ -96,12 +112,12 @@ object Server {
         var payload = str
         val string = StringBuilder()
         var i = 0
-        while (i < payload.length) {
+        while (i < payload.length && (i+8)<=payload.length) {
             val c = Integer.parseInt(payload.substring(i, i + 8), 2).toChar()
+            //println(c)
             string.append(c)
             i = i + 8
         }
-
         return string.toString()
     }
 
