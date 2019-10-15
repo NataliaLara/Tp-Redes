@@ -14,8 +14,8 @@ Server {
         val diretorioPayloadBits ="5_bitsPayload_Server.txt" //arquivo a ser criado
         val diretorioPayloadRecebido = "6_payloadRecebido_Server.txt" //arquivo a ser criado
         val filesize = 1022386
-        val diretorioRequest ="/home/natalia/IdeaProjects/Tp-Redes/Servidor/request.txt"
-        var diretorioResponse ="/home/natalia/IdeaProjects/Tp-Redes/Servidor/response.txt"
+        val diretorioRequest ="request.txt"
+        var diretorioResponse ="response.txt"
         val port=15123
 
         val serverSocket = ServerSocket(port)

@@ -25,8 +25,8 @@ object Client {
         val diretorioPduOriginal = "2_pduOriginal_Client.txt"
         val diretorioBitsEnviados = "3_pduBitsEnviados_Client.txt"
         val filesize = 1022386
-        var diretotioRequest = "/home/natalia/IdeaProjects/Tp-Redes/Cliente/request.txt"
-        val diretorioResponse="/home/natalia/IdeaProjects/Tp-Redes/Cliente/response.txt"
+        var diretotioRequest = "request.txt"
+        val diretorioResponse="response.txt"
         val port=15123
 
         while(true) {
