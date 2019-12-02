@@ -1,5 +1,7 @@
 package Client
 
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.net.*
 import java.io.*
 import java.io.BufferedReader
@@ -13,7 +15,7 @@ import java.util.Random
 import java.util.*
 
 object Client {
-
+    var diretorioLog="log.txt"
     @Throws(IOException::class)
     @JvmStatic
     fun main(args: Array<String>) {
@@ -25,8 +27,9 @@ object Client {
         val diretorioPduOriginal = "2_pduOriginal_Client.txt"
         val diretorioBitsEnviados = "3_pduBitsEnviados_Client.txt"
         val filesize = 1022386
-        var diretotioRequest = "request.txt"
-        val diretorioResponse="response.txt"
+        var diretorioRedeTop = "redeTop.txt"
+        val diretorioTransDown="transDown.txt"
+
         val port=15123
 
         while(true) {
@@ -35,25 +38,25 @@ object Client {
             var infos = pduSuperior.split(" ")
 
             while(j<2 ) {
-                pduSuperior = lerArquivo(diretotioRequest)
+                pduSuperior = lerArquivo(diretorioRedeTop)
                 infos = pduSuperior.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray().toList()
                 j=infos.size;
             }
-            var request = StringBuilder()
+            var redeTop = StringBuilder()
             for (i in infos.indices) {
                 if(i!=0){
-                    request.append(infos[i])
+                    redeTop.append(infos[i])
                     if(i!=infos.size-1)
-                        request.append(" ")
+                        redeTop.append(" ")
                 }
                 //println(" "+i+""+infos[i])
             }
 
-            val ipDest=infos[0];
+            val ipDest=infos[1];
             val macDest = getMacWithArp(ipDest)   //endereco mac de destino
 
             //Leitura payload
-            val payload = request.toString()
+            val payload = pduSuperior
             val size = payload.length
 
             //bits prontos para envio
@@ -69,8 +72,8 @@ object Client {
 
             //Escrita do arquivo com pdu de bits
             gravarArquivo(diretorioBitsEnviados, pduBits)
-
-            val socket = Socket(ipDest, port)
+            log("Intialize Connection")
+            var socket = Socket(ipDest, port)
             val transferFile = File(diretorioBitsEnviados) // arquivo a ser transferido
             val bytearray =
                 ByteArray(transferFile.length().toInt()) // vetor onde o arquivo será colocado para ser transferido
@@ -80,20 +83,30 @@ object Client {
             val os = socket.getOutputStream()
 
             colisao()
-            println("Sending Files...")
+            //println("Sending Files...")
+            log("Sending Files...")
             os.write(bytearray, 0, bytearray.size)
             os.flush()
-            socket.close()
-            println("File transfer complete")
+            os.close()
+            //socket.close()
+            //println("File transfer complete")
+            log("File transfer complete")
 
             val serverSocket = ServerSocket(55555)
-            val socketResponse = serverSocket.accept()
-           // val socket2 = Socket(ipDest, 55555)
-            var response=recebeArquivo(filesize,socketResponse,diretorioResponse)
-            println("Response Receive\n")
-            socketResponse.close()
+            socket = serverSocket.accept()
 
-            val limparArquivo = File(diretotioRequest)
+            //var response=recebeArquivo(filesize,socketResponse,diretorioResponse)
+            //socket.getInputStream()
+
+            var transDown=recebeArquivo(filesize,socket,diretorioTransDown)
+            //gravarArquivo(diretorioTransDown,transDown)
+
+            log("Response Receive")
+            println("\n")
+            //socketResponse.close()
+            socket.close()
+
+            val limparArquivo = File(diretorioRedeTop)
             limparArquivo.writeText("");
         }
 
@@ -113,6 +126,31 @@ object Client {
             while (linha != null) {
                 arquivo= linha
                 //println(linha)
+                linha = reader.readLine()
+            }
+
+        } catch (e: java.lang.IllegalStateException) {
+
+        }catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return arquivo
+
+    }
+
+    private fun lerArquivoLog(diretorio:String):String{
+
+        var linha: String //conteudo do arquivo
+        var arquivo= " "
+        try {
+            // Le o arquivo
+            val ler = FileReader(diretorio)
+            val reader = BufferedReader(ler)
+
+            linha = reader.readLine()
+            while (linha != null) {
+                arquivo= arquivo+linha+"\n"
+                //println(arquivo)
                 linha = reader.readLine()
             }
 
@@ -225,6 +263,16 @@ object Client {
         return string.toString()
     }
 
+    private fun log(instrucao:String){
+        val dateFormat: DateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+        val date = Date()
+        var log= lerArquivoLog(diretorioLog)
+
+        println(dateFormat.format(date) +" "+instrucao)
+        //Thread.sleep(500)
+        gravarArquivo(diretorioLog,log+"Client Physical Layer "+dateFormat.format(date)+" "+instrucao)
+    }
+
     private fun obterIpCorreto(): String? { //resolve o problema de multiplas interfaces
         var ipAddress: String? = null
         var net: Enumeration<NetworkInterface>? = null
@@ -278,7 +326,8 @@ object Client {
         val gerador = Random()
         val resul = gerador.nextInt(1000)
         if (resul<500){
-            println("Collision! Waiting...")
+            log("Collision! Waiting...")
+            //println("Collision! Waiting...")
             Thread.sleep(3000)
         }
     }
