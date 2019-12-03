@@ -9,7 +9,7 @@ import java.util.*
 
 object
 Server {
-    var diretorioLog="log.txt"
+    var diretorioLog="logFisica.txt"
     @Throws(IOException::class)
     @JvmStatic
     fun main(args: Array<String>) {
@@ -18,8 +18,8 @@ Server {
         val diretorioPayloadBits ="5_bitsPayload_Server.txt" //arquivo a ser criado
         val diretorioPayloadRecebido = "6_payloadRecebido_Server.txt" //arquivo a ser criado
         val filesize = 1022386
-        val diretoriorRedeTop ="redeTop.txt"
-        var diretorioTransDown ="transDown.txt"
+        val diretoriorRedeTop ="fisicaTop.txt"
+        var diretorioTransDown ="redeDown.txt"
         val port=15123
 
         val serverSocket = ServerSocket(port)
