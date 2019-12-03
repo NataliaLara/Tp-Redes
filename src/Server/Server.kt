@@ -59,6 +59,7 @@ Server {
             }*/
             //println("Response Receive")
             log("Response Receive")
+           //socket.close()
             Thread.sleep(1000)
             socket = Socket(ipOrigem, 55555)
             //val socket2 = serverSocket.accept()
