@@ -1,0 +1,14 @@
+              Client Physical Layer 02/12/2019 09:25:48 Intialize Connection
+Server Physical Layer 02/12/2019 09:25:49 Accepted connection : Socket[addr=/172.16.254.184,port=17132,localport=15123]
+Client Physical Layer 02/12/2019 09:25:52 Sending Files...
+Server Physical Layer 02/12/2019 09:25:53 File received
+Server Physical Layer 02/12/2019 09:25:53 Response Receive
+Server Physical Layer 02/12/2019 09:25:55 Sending Response...
+Client Physical Layer 02/12/2019 09:25:55 Response Receive
+Client Physical Layer 02/12/2019 09:26:19 Intialize Connection
+Server Physical Layer 02/12/2019 09:26:19 Accepted connection : Socket[addr=/172.16.254.184,port=17136,localport=15123]
+Client Physical Layer 02/12/2019 09:26:23 Sending Files...
+Server Physical Layer 02/12/2019 09:26:23 File received
+Server Physical Layer 02/12/2019 09:26:24 Response Receive
+Server Physical Layer 02/12/2019 09:26:25 Sending Response...
+Client Physical Layer 02/12/2019 09:26:26 Response Receive
