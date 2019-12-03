@@ -15,7 +15,7 @@ import java.util.Random
 import java.util.*
 
 object Client {
-    var diretorioLog="log.txt"
+    var diretorioLog="logFisica.txt"
     @Throws(IOException::class)
     @JvmStatic
     fun main(args: Array<String>) {
@@ -27,8 +27,8 @@ object Client {
         val diretorioPduOriginal = "2_pduOriginal_Client.txt"
         val diretorioBitsEnviados = "3_pduBitsEnviados_Client.txt"
         val filesize = 1022386
-        var diretorioRedeTop = "redeTop.txt"
-        val diretorioTransDown="transDown.txt"
+        var diretorioRedeTop = "fisicaTop.txt"
+        val diretorioTransDown="redeDown.txt"
 
         val port=15123
 
